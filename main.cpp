@@ -38,6 +38,10 @@ int main() {
 
 #else
 
+#define MAX_BUFFER_SIZE 1024
+
+char buffer[MAX_BUFFER_SIZE];
+
 int main() {
 
     printf("Let's see if this works: ");
@@ -47,11 +51,23 @@ int main() {
     {
         c = getch();
         if (c == '\r') {
-            printf("\n");
+            //printf("\n");
+            buffer[buffer_index] = c;
+            buffer_index++;
         } else if (c == 8) {
-            printf("\b \b");
+            //printf("\b \b");
+            c = ' ';
+            buffer[buffer_index] = c;
+            buffer_index--;
         } else {
-            putch(c);
+            buffer[buffer_index] = c;
+            buffer_index++;
+            //putch(c);
+        }
+
+        system("cls");
+        for (int index = 0; index < buffer_index; index++) {
+            printf("%c", buffer[index]);
         }
     }
 }
