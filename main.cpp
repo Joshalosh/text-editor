@@ -37,15 +37,19 @@ int main() {
 }
 
 #else
+
 int main() {
 
     printf("Let's see if this works: ");
+    int buffer_index = 0;
     char c = NULL;
     while (c != '0')
     {
         c = getch();
         if (c == '\r') {
             printf("\n");
+        } else if (c == 8) {
+            printf("\b \b");
         } else {
             putch(c);
         }
