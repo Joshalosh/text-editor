@@ -46,7 +46,7 @@ int main() {
 
     printf("Let's see if this works: ");
     int buffer_index = 0;
-    char c = NULL;
+    char c = 0;
     while (c != '0')
     {
         c = getch();
@@ -56,9 +56,9 @@ int main() {
             buffer_index++;
         } else if (c == 8) {
             //printf("\b \b");
-            c = ' ';
-            buffer[buffer_index] = c;
+            c = '\0';
             buffer_index--;
+            buffer[buffer_index] = c;
         } else {
             buffer[buffer_index] = c;
             buffer_index++;
