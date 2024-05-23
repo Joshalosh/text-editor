@@ -42,6 +42,22 @@ int main() {
 
 char buffer[MAX_BUFFER_SIZE];
 
+void ClearScreen()
+{
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    COORD coordScreen = {0,0};
+    DWORD cCharsWritten;
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    DWORD dwConSize;
+
+    if (!GetConsoleScreenBufferInfo(hConsole, &csbi)) return;
+    dwConSize = csbi.dwSize.X * csbi.dwSize.Y;
+
+    if (!FillConsoleOutputCharacter(hConsole, (TCHAR) ' ', dwConSize, coordScreen, &cCharsWritten)) return;
+    if (!FillConsoleOutputAttribute(hConsole, csbi.wAttributes, dwConSize, coordScreen, &cCharsWritten)) return;
+    SetConsoleCursorPosition(hConsole, coordScreen);
+}
+
 int main() {
 
     printf("Let's see if this works: ");
@@ -52,6 +68,7 @@ int main() {
         c = getch();
         if (c == '\r') {
             //printf("\n");
+            c = '\n';
             buffer[buffer_index] = c;
             buffer_index++;
         } else if (c == 8) {
@@ -65,7 +82,8 @@ int main() {
             //putch(c);
         }
 
-        system("cls");
+        ClearScreen();
+
         for (int index = 0; index < buffer_index; index++) {
             printf("%c", buffer[index]);
         }
