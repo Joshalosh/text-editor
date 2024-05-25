@@ -58,6 +58,12 @@ void ClearScreen()
     SetConsoleCursorPosition(hConsole, coordScreen);
 }
 
+void SetCursorPosition(int x, int y) {
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    COORD coord = {(SHORT)x, (SHORT)y};
+    SetConsoleCursorPosition(hConsole, coord);
+}
+
 int main() {
 
     printf("Let's see if this works: ");
@@ -67,26 +73,32 @@ int main() {
     {
         c = getch();
         if (c == '\r') {
-            //printf("\n");
             c = '\n';
             buffer[buffer_index] = c;
             buffer_index++;
+            printf("\n");
         } else if (c == 8) {
-            //printf("\b \b");
-            c = '\0';
-            buffer_index--;
-            buffer[buffer_index] = c;
+            if (buffer_index > 0)
+            {
+                c = '\0';
+                buffer_index--;
+                buffer[buffer_index] = c;
+                printf("\b \b");
+            }
         } else {
             buffer[buffer_index] = c;
             buffer_index++;
-            //putch(c);
+            putch(c);
+            printf("%d", c);
         }
 
+#if 0
         ClearScreen();
 
         for (int index = 0; index < buffer_index; index++) {
             printf("%c", buffer[index]);
         }
+#endif
     }
 }
 #endif
