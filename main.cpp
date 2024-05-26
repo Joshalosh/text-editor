@@ -64,6 +64,14 @@ void SetCursorPosition(int x, int y) {
     SetConsoleCursorPosition(hConsole, coord);
 }
 
+void RefreshScreen() {
+    ClearScreen();
+    printf("%s", buffer);
+    int cursor_x = cursor_index % 80;
+    int cursor_y = cursor_index / 80;
+    SetCursorPosition(cursor_x, cursor_y);
+}
+
 int main() {
 
     printf("Let's see if this works: ");
