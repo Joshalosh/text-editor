@@ -41,6 +41,7 @@ int main() {
 #define MAX_BUFFER_SIZE 1024
 
 char buffer[MAX_BUFFER_SIZE];
+int cursor_index = 0;
 
 void ClearScreen()
 {
@@ -77,27 +78,49 @@ int main() {
     printf("Let's see if this works: ");
     int buffer_index = 0;
     char c = 0;
-    while (c != '0')
+    while (c != 'q')
     {
         c = getch();
-        if (c == '\r') {
-            c = '\n';
-            buffer[buffer_index] = c;
-            buffer_index++;
-            printf("\n");
-        } else if (c == 8) {
-            if (buffer_index > 0)
-            {
-                c = '\0';
-                buffer_index--;
+        switch (c) {
+            case '\r': {
+                c = '\n';
                 buffer[buffer_index] = c;
-                printf("\b \b");
+                buffer_index++;
+                printf("\n");
+            } break;
+            case 8: {
+                if (buffer_index > 0)
+                {
+                    c = '\0';
+                    buffer_index--;
+                    buffer[buffer_index] = c;
+                    printf("\b \b");
+                }
+            } break;
+            case 0:
+            case 224: {
+                char arrow = _getch();
+                switch (arrow) {
+                    case 75: { // NOTE: Left arrow
+                        if (cursor_index > 0) {
+                            cursor_index--;
+                            SetCursorPosition(cursor_index % 80, cursor_index / 80);
+                        }
+                    } break;
+                    case 77: { // NOTE: Right arrow
+                        if ((cursor_index < MAX_BUFFER_SIZE - 1) && (buffer[cursor_index] != '\0')) {
+                            cursor_index++;
+                            SetCursorPosition(cursor_index % 80, cursor_index / 80);
+                        }
+                    }
+                }
             }
-        } else {
-            buffer[buffer_index] = c;
-            buffer_index++;
-            putch(c);
-            printf("%d", c);
+            default: {
+                buffer[buffer_index] = c;
+                buffer_index++;
+                putch(c);
+                //printf("%d", c);
+            } break;
         }
 
 #if 0
