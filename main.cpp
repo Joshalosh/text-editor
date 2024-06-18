@@ -2,45 +2,9 @@
 #include <windows.h>
 #include <conio.h>
 
-#if 0 
-HANDLE hStdin;
-DWORD fdwSaveOldMode;
-
-void DisableRawMode() {
-    SetConsoleMode(hStdin, fdwSaveOldMode);
-}
-
-void EnableRawMode() {
-    hStdin = GetStdHandle(STD_INPUT_HANDLE);
-    GetConsoleMode(hStdin, &fdwSaveOldMode);
-
-    DWORD fdwMode = ENABLE_VIRTUAL_TERMINAL_INPUT;
-    SetConsoleMode(hStdin, fdwMode);
-}
-
-int main() {
-    EnableRawMode();
-
-    while(1) {
-        if (_kbhit()) {
-            char c  = _getch();
-            if (iscntrl(c)) {
-                printf("%c\r\n", c);
-            } else {
-                printf("%c", c);
-            }
-            if (c == '0') break;
-        }
-    }
-
-    DisableRawMode();
-}
-
-#else
-
 #define MAX_BUFFER_SIZE 1024
 
-char buffer[MAX_BUFFER_SIZE];
+unsigned char buffer[MAX_BUFFER_SIZE];
 int cursor_index = 0;
 
 void ClearScreen()
@@ -76,6 +40,8 @@ void RefreshScreen() {
 int main() {
     RefreshScreen();
     int buffer_index = 0;
+    unsigned char appended_buffer[MAX_BUFFER_SIZE];
+    int appended_buffer_count = 0;
     unsigned char c = 0;
     while (c != 'q')
     {
@@ -102,13 +68,17 @@ int main() {
                 switch (arrow) {
                     case 75: { // NOTE: Left arrow
                         if (cursor_index > 0) {
+                            appended_buffer[appended_buffer_count] = buffer[buffer_index];
+                            appended_buffer_count++;
                             cursor_index--;
+                            buffer_index--;
                             SetCursorPosition(cursor_index % 80, cursor_index / 80);
                         }
                     } break;
                     case 77: { // NOTE: Right arrow
                         if ((cursor_index < MAX_BUFFER_SIZE - 1) && (buffer[cursor_index] != '\0')) {
                             cursor_index++;
+                            buffer_index++;
                             SetCursorPosition(cursor_index % 80, cursor_index / 80);
                         }
                     } break;
@@ -126,13 +96,17 @@ int main() {
             } break;
         }
 
-#if 0
-        ClearScreen();
+        if (appended_buffer_count > 0)
+        {
+            for (int index = 0; index < appended_buffer_count; index++)
+            {
+                buffer_index++;
+                buffer[buffer_index] = appended_buffer[index];
+                printf("%c", buffer[buffer_index]);
+            }
 
-        for (int index = 0; index < buffer_index; index++) {
-            printf("%c", buffer[index]);
+            buffer_index -= appended_buffer_count;
+            SetCursorPosition(buffer_index % 80, buffer_index / 80);
         }
-#endif
     }
 }
-#endif
