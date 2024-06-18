@@ -74,10 +74,9 @@ void RefreshScreen() {
 }
 
 int main() {
-
-    printf("Let's see if this works: ");
+    RefreshScreen();
     int buffer_index = 0;
-    char c = 0;
+    unsigned char c = 0;
     while (c != 'q')
     {
         c = getch();
@@ -99,7 +98,7 @@ int main() {
             } break;
             case 0:
             case 224: {
-                char arrow = _getch();
+                unsigned char arrow = _getch();
                 switch (arrow) {
                     case 75: { // NOTE: Left arrow
                         if (cursor_index > 0) {
@@ -112,14 +111,18 @@ int main() {
                             cursor_index++;
                             SetCursorPosition(cursor_index % 80, cursor_index / 80);
                         }
-                    }
+                    } break;
+                    default:
+                    {
+                        printf("Unexpected arrow key value: %d (%'c')\n", arrow, arrow);
+                    } break;
                 }
-            }
+            } break;
             default: {
                 buffer[buffer_index] = c;
                 buffer_index++;
+                cursor_index = buffer_index;
                 putch(c);
-                //printf("%d", c);
             } break;
         }
 
