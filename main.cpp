@@ -98,10 +98,12 @@ int main() {
 
         if (appended_buffer_count > 0)
         {
+            appended_buffer_count--;
             for (int index = 0; index < appended_buffer_count; index++)
             {
                 buffer_index++;
-                buffer[buffer_index] = appended_buffer[index];
+                int appended_reverse_index = appended_buffer_count - index;
+                buffer[buffer_index] = appended_buffer[appended_reverse_index];
                 printf("%c", buffer[buffer_index]);
             }
 
