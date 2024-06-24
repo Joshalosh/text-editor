@@ -68,10 +68,10 @@ int main() {
                 switch (arrow) {
                     case 75: { // NOTE: Left arrow
                         if (cursor_index > 0) {
+                            buffer_index--;
+                            cursor_index--;
                             appended_buffer[appended_buffer_count] = buffer[buffer_index];
                             appended_buffer_count++;
-                            cursor_index--;
-                            buffer_index--;
                             SetCursorPosition(cursor_index % 80, cursor_index / 80);
                         }
                     } break;
@@ -79,6 +79,7 @@ int main() {
                         if ((cursor_index < MAX_BUFFER_SIZE - 1) && (buffer[cursor_index] != '\0')) {
                             cursor_index++;
                             buffer_index++;
+                            appended_buffer_count--;
                             SetCursorPosition(cursor_index % 80, cursor_index / 80);
                         }
                     } break;
@@ -99,7 +100,7 @@ int main() {
         if (appended_buffer_count > 0)
         {
             appended_buffer_count--;
-            for (int index = 0; index < appended_buffer_count; index++)
+            for (int index = 0; index <= appended_buffer_count; index++)
             {
                 buffer_index++;
                 int appended_reverse_index = appended_buffer_count - index;
@@ -107,6 +108,7 @@ int main() {
                 printf("%c", buffer[buffer_index]);
             }
 
+            appended_buffer_count++;
             buffer_index -= appended_buffer_count;
             SetCursorPosition(buffer_index % 80, buffer_index / 80);
         }
