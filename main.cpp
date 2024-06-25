@@ -8,8 +8,7 @@ unsigned char buffer[MAX_BUFFER_SIZE];
 int cursor_index = 0;
 int buffer_index = 0;
 
-void ClearScreen()
-{
+void ClearScreen() {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     COORD coordScreen = {0,0};
     DWORD cCharsWritten;
@@ -41,8 +40,7 @@ void RefreshScreen() {
 int main() {
     RefreshScreen();
     unsigned char c = 0;
-    while (c != 'q')
-    {
+    while (c != 'q') {
         c = getch();
         switch (c) {
             case '\r': { // NOTE: Enter key
