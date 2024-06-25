@@ -5,7 +5,7 @@
 #define MAX_BUFFER_SIZE 1024
 
 unsigned char buffer[MAX_BUFFER_SIZE];
-int cursor_index = 0;
+int buffer_index = 0;
 
 void ClearScreen()
 {
@@ -32,14 +32,13 @@ void SetCursorPosition(int x, int y) {
 void RefreshScreen() {
     ClearScreen();
     printf("%s", buffer);
-    int cursor_x = cursor_index % 80;
-    int cursor_y = cursor_index / 80;
+    int cursor_x = buffer_index % 80;
+    int cursor_y = buffer_index / 80;
     SetCursorPosition(cursor_x, cursor_y);
 }
 
 int main() {
     RefreshScreen();
-    int buffer_index = 0;
     unsigned char appended_buffer[MAX_BUFFER_SIZE];
     int appended_buffer_count = 0;
     unsigned char c = 0;
@@ -67,20 +66,18 @@ int main() {
                 unsigned char arrow = _getch();
                 switch (arrow) {
                     case 75: { // NOTE: Left arrow
-                        if (cursor_index > 0) {
+                        if (buffer_index > 0) {
                             buffer_index--;
-                            cursor_index--;
                             appended_buffer[appended_buffer_count] = buffer[buffer_index];
                             appended_buffer_count++;
-                            SetCursorPosition(cursor_index % 80, cursor_index / 80);
+                            SetCursorPosition(buffer_index % 80, buffer_index / 80);
                         }
                     } break;
                     case 77: { // NOTE: Right arrow
-                        if ((cursor_index < MAX_BUFFER_SIZE - 1) && (buffer[cursor_index] != '\0')) {
-                            cursor_index++;
+                        if ((buffer_index < MAX_BUFFER_SIZE - 1) && (buffer[buffer_index] != '\0')) {
                             buffer_index++;
                             appended_buffer_count--;
-                            SetCursorPosition(cursor_index % 80, cursor_index / 80);
+                            SetCursorPosition(buffer_index % 80, buffer_index / 80);
                         }
                     } break;
                     default:
@@ -92,7 +89,6 @@ int main() {
             default: {
                 buffer[buffer_index] = c;
                 buffer_index++;
-                cursor_index = buffer_index;
                 putch(c);
             } break;
         }
