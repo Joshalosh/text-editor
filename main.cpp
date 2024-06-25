@@ -45,7 +45,12 @@ int main() {
         switch (c) {
             case '\r': { // NOTE: Enter key
                 buffer[buffer_index++] = '\n';
-                cursor_index = buffer_index;
+                int next_line_start = (cursor_index / 80 + 1) * 80;
+                if (next_line_start < MAX_BUFFER_SIZE) {
+                    cursor_index = next_line_start;
+                } else {
+                    cursor_index = buffer_index;
+                }
                 RefreshScreen();
             } break;
             case 8: { // NOTE: Bakspace key
@@ -83,8 +88,8 @@ int main() {
                         buffer[i] = buffer[i-1];
                     }
                 }
-                buffer[cursor_index++] = c;
-                buffer_index++;
+                buffer[buffer_index++] = c;
+                cursor_index++;
                 RefreshScreen();
             } break;
         }
