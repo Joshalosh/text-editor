@@ -3,10 +3,13 @@
 #include <conio.h>
 
 #define MAX_BUFFER_SIZE 1024
+#define MAX_LINES 100
 
 unsigned char buffer[MAX_BUFFER_SIZE];
+int row_line_sizes[MAX_LINES];
 int cursor_index = 0;
 int buffer_index = 0;
+
 
 void ClearScreen() {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
