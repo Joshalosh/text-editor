@@ -4,6 +4,7 @@
 
 #define MAX_BUFFER_SIZE 1024
 #define MAX_LINES 100
+#define MAX_ROW_SIZE 80
 
 unsigned char buffer[MAX_BUFFER_SIZE];
 int row_line_sizes[MAX_LINES];
@@ -35,8 +36,8 @@ void SetCursorPosition(int x, int y) {
 void RefreshScreen() {
     ClearScreen();
     printf("%s", buffer);
-    int cursor_x = cursor_index % 80;
-    int cursor_y = cursor_index / 80;
+    int cursor_x = cursor_index % MAX_ROW_SIZE;
+    int cursor_y = cursor_index / MAX_ROW_SIZE;
     SetCursorPosition(cursor_x, cursor_y);
 }
 
@@ -50,7 +51,7 @@ int main() {
             case '\r': { // NOTE: Enter key
                 buffer[buffer_index++] = '\n';
                 buffer_count++;
-                int next_line_start = (cursor_index / 80 + 1) * 80;
+                int next_line_start = (cursor_index / MAX_ROW_SIZE + 1) * MAX_ROW_SIZE;
                 if (next_line_start < MAX_BUFFER_SIZE) {
                     cursor_index = next_line_start;
                 } else {
@@ -80,15 +81,20 @@ int main() {
                     case 75: { // NOTE: Left arrow
                         if (buffer_index && cursor_index > 0) {
                             buffer_index--;
-                            cursor_index--;
-                            SetCursorPosition(cursor_index % 80, cursor_index / 80);
+                            if (cursor_index % MAX_ROW_SIZE == 0) {
+                                int line_size_to_eol_difference = MAX_ROW_SIZE - row_line_sizes[cursor_index/MAX_ROW_SIZE-1];
+                                cursor_index -= line_size_to_eol_difference;
+                            } else {
+                                cursor_index--;
+                            }
+                            SetCursorPosition(cursor_index % MAX_ROW_SIZE, cursor_index / MAX_ROW_SIZE);
                         }
                     } break;
                     case 77: { // NOTE: Right arrow
                         if (buffer_index < buffer_count) {
                             buffer_index++;
                             cursor_index++;
-                            SetCursorPosition(cursor_index % 80, cursor_index / 80);
+                            SetCursorPosition(cursor_index % MAX_ROW_SIZE, cursor_index / MAX_ROW_SIZE);
                         }
                     } break;
                 }
@@ -99,7 +105,7 @@ int main() {
                         buffer[i] = buffer[i-1];
                     }
                 }
-                row_line_sizes[row_num] += 1;
+                row_line_sizes[cursor_index/MAX_ROW_SIZE] += 1;
                 buffer[buffer_index++] = c;
                 cursor_index++;
                 buffer_count++;
@@ -107,4 +113,5 @@ int main() {
             } break;
         }
     }
+    ClearScreen();
 }
