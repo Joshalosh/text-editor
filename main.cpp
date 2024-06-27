@@ -10,7 +10,6 @@ int row_line_sizes[MAX_LINES];
 int cursor_index = 0;
 int buffer_index = 0;
 
-
 void ClearScreen() {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     COORD coordScreen = {0,0};
@@ -42,6 +41,7 @@ void RefreshScreen() {
 
 int main() {
     RefreshScreen();
+    int row_num = 0;
     unsigned char c = 0;
     while (c != 'q') {
         c = getch();
@@ -91,7 +91,9 @@ int main() {
                         buffer[i] = buffer[i-1];
                     }
                 }
-                buffer[buffer_index++] = c;
+                row_line_sizes[row_num] += 1;
+                buffer[cursor_index/80] = c;
+                buffer_index++;
                 cursor_index++;
                 RefreshScreen();
             } break;
