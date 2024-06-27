@@ -9,6 +9,7 @@ unsigned char buffer[MAX_BUFFER_SIZE];
 int row_line_sizes[MAX_LINES];
 int cursor_index = 0;
 int buffer_index = 0;
+int buffer_count = 0;
 
 void ClearScreen() {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -48,22 +49,27 @@ int main() {
         switch (c) {
             case '\r': { // NOTE: Enter key
                 buffer[buffer_index++] = '\n';
+                buffer_count++;
                 int next_line_start = (cursor_index / 80 + 1) * 80;
                 if (next_line_start < MAX_BUFFER_SIZE) {
                     cursor_index = next_line_start;
                 } else {
-                    cursor_index = buffer_index;
+                    cursor_index = buffer_count;
                 }
                 RefreshScreen();
             } break;
             case 8: { // NOTE: Bakspace key
-                if (cursor_index > 0) {
-                    for (int i = cursor_index - 1; i < buffer_index; i++) {
+                if (buffer_index > 0) {
+                    for (int i = buffer_index - 1; i < buffer_count; i++) {
                         buffer[i] = buffer[i+1];
                     }
 
                     buffer[--buffer_index] = '\0';
-                    cursor_index--;
+                    if (cursor_index > 0) {
+                        cursor_index--;
+                    } else {
+                        cursor_index = 0;
+                    }
                     RefreshScreen();
                 }
             } break;
@@ -72,13 +78,15 @@ int main() {
                 unsigned char arrow = _getch();
                 switch (arrow) {
                     case 75: { // NOTE: Left arrow
-                        if (cursor_index > 0) {
+                        if (buffer_index && cursor_index > 0) {
+                            buffer_index--;
                             cursor_index--;
                             SetCursorPosition(cursor_index % 80, cursor_index / 80);
                         }
                     } break;
                     case 77: { // NOTE: Right arrow
-                        if (cursor_index < buffer_index) {
+                        if (buffer_index < buffer_count) {
+                            buffer_index++;
                             cursor_index++;
                             SetCursorPosition(cursor_index % 80, cursor_index / 80);
                         }
@@ -86,15 +94,15 @@ int main() {
                 }
             } break;
             default: { // NOTE: Other characters
-                if (cursor_index < buffer_index) {
-                    for (int i = buffer_index; i > cursor_index; i--) {
+                if (buffer_index < buffer_count) {
+                    for (int i = buffer_count; i > buffer_index; i--) {
                         buffer[i] = buffer[i-1];
                     }
                 }
                 row_line_sizes[row_num] += 1;
-                buffer[cursor_index/80] = c;
-                buffer_index++;
+                buffer[buffer_index++] = c;
                 cursor_index++;
+                buffer_count++;
                 RefreshScreen();
             } break;
         }
