@@ -59,7 +59,7 @@ int main() {
                 }
                 RefreshScreen();
             } break;
-            case 8: { // NOTE: Bakspace key
+            case 8: { // NOTE: Backspace key
                 if (buffer_index > 0) {
                     for (int i = buffer_index - 1; i < buffer_count; i++) {
                         buffer[i] = buffer[i+1];
@@ -82,8 +82,8 @@ int main() {
                         if (buffer_index && cursor_index > 0) {
                             buffer_index--;
                             if (cursor_index % MAX_ROW_SIZE == 0) {
-                                int line_size_to_eol_difference = MAX_ROW_SIZE - row_line_sizes[cursor_index/MAX_ROW_SIZE-1];
-                                cursor_index -= line_size_to_eol_difference;
+                                int null_space = MAX_ROW_SIZE - row_line_sizes[cursor_index/MAX_ROW_SIZE-1];
+                                cursor_index -= null_space;
                             } else {
                                 cursor_index--;
                             }
@@ -92,8 +92,15 @@ int main() {
                     } break;
                     case 77: { // NOTE: Right arrow
                         if (buffer_index < buffer_count) {
+                            if ((cursor_index % MAX_ROW_SIZE) == (row_line_sizes[cursor_index/MAX_ROW_SIZE])) {
+                                int next_line_start = (cursor_index / MAX_ROW_SIZE + 1) * MAX_ROW_SIZE;
+                                if (next_line_start < MAX_BUFFER_SIZE) {
+                                    cursor_index = next_line_start;
+                                }
+                            } else {
+                                cursor_index++;
+                            }
                             buffer_index++;
-                            cursor_index++;
                             SetCursorPosition(cursor_index % MAX_ROW_SIZE, cursor_index / MAX_ROW_SIZE);
                         }
                     } break;
