@@ -82,18 +82,23 @@ int main() {
                         if (buffer_index && cursor_index > 0) {
                             buffer_index--;
                             if (cursor_index % MAX_ROW_SIZE == 0) {
-                                int null_space = MAX_ROW_SIZE - row_line_sizes[cursor_index/MAX_ROW_SIZE-1];
+                                int previous_row = cursor_index/MAX_ROW_SIZE - 1;
+                                int null_space = MAX_ROW_SIZE - row_line_sizes[previous_row];
                                 cursor_index -= null_space;
                             } else {
                                 cursor_index--;
                             }
-                            SetCursorPosition(cursor_index % MAX_ROW_SIZE, cursor_index / MAX_ROW_SIZE);
+                            int cursor_x_position = cursor_index % MAX_ROW_SIZE;
+                            int cursor_y_position = cursor_index / MAX_ROW_SIZE;
+                            SetCursorPosition(cursor_x_position, cursor_y_position);
                         }
                     } break;
                     case 77: { // NOTE: Right arrow
                         if (buffer_index < buffer_count) {
-                            if ((cursor_index % MAX_ROW_SIZE) == (row_line_sizes[cursor_index/MAX_ROW_SIZE])) {
-                                int next_line_start = (cursor_index / MAX_ROW_SIZE + 1) * MAX_ROW_SIZE;
+                            int cursor_x_position = cursor_index % MAX_ROW_SIZE;
+                            int cursor_y_position = cursor_index / MAX_ROW_SIZE;
+                            if (cursor_x_position == row_line_sizes[cursor_y_position]) {
+                                int next_line_start = (cursor_y_position + 1) * MAX_ROW_SIZE;
                                 if (next_line_start < MAX_BUFFER_SIZE) {
                                     cursor_index = next_line_start;
                                 }
@@ -101,7 +106,9 @@ int main() {
                                 cursor_index++;
                             }
                             buffer_index++;
-                            SetCursorPosition(cursor_index % MAX_ROW_SIZE, cursor_index / MAX_ROW_SIZE);
+                            cursor_x_position = cursor_index % MAX_ROW_SIZE;
+                            cursor_y_position = cursor_index / MAX_ROW_SIZE;
+                            SetCursorPosition(cursor_x_position, cursor_y_position);
                         }
                     } break;
                 }
