@@ -89,7 +89,15 @@ int main() {
                 switch (arrow) {
                     case 72: { // NOTE: Up arrow
                         if (CursorYPosition(cursor_index) > 0) {
-                            cursor_index -= MAX_ROW_SIZE;
+                            int old_cursor_x = CursorXPosition(cursor_index);
+                            if (row_line_sizes[CursorYPosition(cursor_index)] > row_line_sizes[CursorYPosition(cursor_index)-1]) {
+                                cursor_index -= MAX_ROW_SIZE;
+                                cursor_index -= cursor_index - row_line_sizes[CursorYPosition(cursor_index)];
+                            } else {
+                                cursor_index -= MAX_ROW_SIZE;
+                            }
+                            int new_cursor_x_to_line_end = row_line_sizes[CursorYPosition(cursor_index)] - CursorXPosition(cursor_index);
+                            buffer_index -= old_cursor_x + new_cursor_x_to_line_end + 1;
                             SetCursorPosition(cursor_index);
                         }
                     } break;
