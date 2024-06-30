@@ -88,16 +88,10 @@ int main() {
                 unsigned char arrow = _getch();
                 switch (arrow) {
                     case 72: { // NOTE: Up arrow
-#if 0
-                                 // TODO: Need to finish implementing this, it seems like this isn't working
                         if (CursorYPosition(cursor_index) > 0) {
-
-                            int previous_line = CursorYPosition(cursor_index) - 1;
-                            int new_cursor_pos_to_eol = row_line_sizes[previous_line] - CursorXPosition(cursor_index);
-                            cursor_index -= CursorXPosition(cursor_index);
-                            cursor_index -= new_cursor_pos_to_eol;
+                            cursor_index -= MAX_ROW_SIZE;
+                            SetCursorPosition(cursor_index);
                         }
-#endif
                     } break;
                     case 75: { // NOTE: Left arrow
                         if (buffer_index && cursor_index > 0) {
@@ -126,6 +120,8 @@ int main() {
                             SetCursorPosition(cursor_index);
                         }
                     } break;
+                    case 80: { // NOTE: Down arrow
+                    }
                 }
             } break;
             default: { // NOTE: Other characters
