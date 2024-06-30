@@ -26,19 +26,19 @@ void ClearScreen() {
     SetConsoleCursorPosition(hConsole, coordScreen);
 }
 
-int GetXPosition(int cursor_index) {
+int CursorXPosition(int cursor_index) {
     int result = cursor_index % MAX_ROW_SIZE;
     return result;
 }
 
-int GetYPosition(int cursor_index) {
+int CursorYPosition(int cursor_index) {
     int result = cursor_index / MAX_ROW_SIZE;
     return result;
 }
 void SetCursorPosition(int cursor_index) {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    int x           = GetXPosition(cursor_index);
-    int y           = GetYPosition(cursor_index);
+    int x           = CursorXPosition(cursor_index);
+    int y           = CursorYPosition(cursor_index);
     COORD coord     = {(SHORT)x, (SHORT)y};
     SetConsoleCursorPosition(hConsole, coord);
 }
@@ -62,7 +62,7 @@ int main() {
             case '\r': { // NOTE: Enter key
                 buffer[buffer_index++] = '\n';
                 buffer_count++;
-                int next_line_start = (GetYPosition(cursor_index) + 1) * MAX_ROW_SIZE;
+                int next_line_start = (CursorYPosition(cursor_index) + 1) * MAX_ROW_SIZE;
                 if (next_line_start < MAX_BUFFER_SIZE) {
                     cursor_index = next_line_start;
                 } else {
@@ -76,8 +76,7 @@ int main() {
                         buffer[i] = buffer[i+1];
                     }
 
-                    int cursor_y_position = GetYPosition(cursor_index);
-                    row_line_sizes[cursor_y_position] -= 1;
+                    row_line_sizes[CursorYPosition(cursor_index)] -= 1;
                     buffer_count--;
                     buffer_index--;
                     cursor_index--;
@@ -88,12 +87,24 @@ int main() {
             case 224: {
                 unsigned char arrow = _getch();
                 switch (arrow) {
+                    case 72: { // NOTE: Up arrow
+#if 0
+                                 // TODO: Need to finish implementing this, it seems like this isn't working
+                        if (CursorYPosition(cursor_index) > 0) {
+
+                            int previous_line = CursorYPosition(cursor_index) - 1;
+                            int new_cursor_pos_to_eol = row_line_sizes[previous_line] - CursorXPosition(cursor_index);
+                            cursor_index -= CursorXPosition(cursor_index);
+                            cursor_index -= new_cursor_pos_to_eol;
+                        }
+#endif
+                    } break;
                     case 75: { // NOTE: Left arrow
                         if (buffer_index && cursor_index > 0) {
                             buffer_index--;
-                            if (GetXPosition(cursor_index) == 0) {
-                                int previous_row = GetYPosition(cursor_index) - 1;
-                                int null_space = MAX_ROW_SIZE - row_line_sizes[previous_row];
+                            if (CursorXPosition(cursor_index) == 0) {
+                                int previous_line = CursorYPosition(cursor_index) - 1;
+                                int null_space = MAX_ROW_SIZE - row_line_sizes[previous_line];
                                 cursor_index -= null_space;
                             } else {
                                 cursor_index--;
@@ -103,10 +114,8 @@ int main() {
                     } break;
                     case 77: { // NOTE: Right arrow
                         if (buffer_index < buffer_count) {
-                            int cursor_x_position = GetXPosition(cursor_index);
-                            int cursor_y_position = GetYPosition(cursor_index);
-                            if (cursor_x_position == row_line_sizes[cursor_y_position]) {
-                                int next_line_start = (cursor_y_position + 1) * MAX_ROW_SIZE;
+                            if (CursorXPosition(cursor_index) == row_line_sizes[CursorYPosition(cursor_index)]) {
+                                int next_line_start = (CursorYPosition(cursor_index) + 1) * MAX_ROW_SIZE;
                                 if (next_line_start < MAX_BUFFER_SIZE) {
                                     cursor_index = next_line_start;
                                 }
@@ -125,8 +134,7 @@ int main() {
                         buffer[i] = buffer[i-1];
                     }
                 }
-                int cursor_y_position = GetYPosition(cursor_index);
-                row_line_sizes[cursor_y_position] += 1;
+                row_line_sizes[CursorYPosition(cursor_index)] += 1;
                 buffer[buffer_index++] = c;
                 cursor_index++;
                 buffer_count++;
