@@ -92,7 +92,7 @@ int main() {
                             int old_cursor_x = CursorXPosition(cursor_index);
                             if (row_line_sizes[CursorYPosition(cursor_index)] > row_line_sizes[CursorYPosition(cursor_index)-1]) {
                                 cursor_index -= MAX_ROW_SIZE;
-                                cursor_index -= cursor_index - row_line_sizes[CursorYPosition(cursor_index)];
+                                cursor_index -= CursorXPosition(cursor_index) - row_line_sizes[CursorYPosition(cursor_index)];
                             } else {
                                 cursor_index -= MAX_ROW_SIZE;
                             }
@@ -129,7 +129,20 @@ int main() {
                         }
                     } break;
                     case 80: { // NOTE: Down arrow
-                    }
+                        if (row_line_sizes[CursorYPosition(cursor_index)+1] > 0) {
+                            int old_cursor_x = CursorXPosition(cursor_index);
+                            if (row_line_sizes[CursorYPosition(cursor_index)] > row_line_sizes[CursorYPosition(cursor_index)+1]) {
+                                cursor_index += MAX_ROW_SIZE;
+                                cursor_index -= CursorXPosition(cursor_index) - row_line_sizes[CursorYPosition(cursor_index)];
+                            } else {
+                                cursor_index += MAX_ROW_SIZE;
+                            }
+                            int old_cursor_x_to_line_end = row_line_sizes[CursorYPosition(cursor_index)-1] - old_cursor_x;
+                            buffer_index += old_cursor_x_to_line_end + CursorXPosition(cursor_index) + 1;
+
+                            SetCursorPosition(cursor_index);
+                        }
+                    } break;
                 }
             } break;
             default: { // NOTE: Other characters
