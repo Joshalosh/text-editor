@@ -69,6 +69,8 @@ int main() {
                     cursor_index = buffer_count;
                 }
                 RefreshScreen(cursor_index);
+                // TODO: Looks like theres some funny business going on with the enter key when you press it 
+                // before the end of the line
             } break;
             case 8: { // NOTE: Backspace key
                 if (buffer_index > 0) {
@@ -90,7 +92,7 @@ int main() {
                     case 72: { // NOTE: Up arrow
                         if (CursorYPosition(cursor_index) > 0) {
                             int old_cursor_x = CursorXPosition(cursor_index);
-                            if (row_line_sizes[CursorYPosition(cursor_index)] > row_line_sizes[CursorYPosition(cursor_index)-1]) {
+                            if (CursorXPosition(cursor_index) > row_line_sizes[CursorYPosition(cursor_index)-1]) {
                                 cursor_index -= MAX_ROW_SIZE;
                                 cursor_index -= CursorXPosition(cursor_index) - row_line_sizes[CursorYPosition(cursor_index)];
                             } else {
@@ -129,18 +131,24 @@ int main() {
                         }
                     } break;
                     case 80: { // NOTE: Down arrow
-                        if (row_line_sizes[CursorYPosition(cursor_index)+1] > 0) {
-                            int old_cursor_x = CursorXPosition(cursor_index);
-                            if (row_line_sizes[CursorYPosition(cursor_index)] > row_line_sizes[CursorYPosition(cursor_index)+1]) {
-                                cursor_index += MAX_ROW_SIZE;
-                                cursor_index -= CursorXPosition(cursor_index) - row_line_sizes[CursorYPosition(cursor_index)];
+                        if (buffer_index < buffer_count) {
+                            int cursor_x = CursorXPosition(cursor_index);
+                            int projected_cursor_index = cursor_index;
+                            if (CursorXPosition(cursor_index) > row_line_sizes[CursorYPosition(cursor_index)+1]) {
+                                projected_cursor_index += MAX_ROW_SIZE;
+                                projected_cursor_index -= CursorXPosition(projected_cursor_index) - row_line_sizes[CursorYPosition(projected_cursor_index)];
                             } else {
-                                cursor_index += MAX_ROW_SIZE;
+                                projected_cursor_index += MAX_ROW_SIZE;
                             }
-                            int old_cursor_x_to_line_end = row_line_sizes[CursorYPosition(cursor_index)-1] - old_cursor_x;
-                            buffer_index += old_cursor_x_to_line_end + CursorXPosition(cursor_index) + 1;
+                            int cursor_x_to_line_end = row_line_sizes[CursorYPosition(cursor_index)] - cursor_x;
+                            int projected_buffer_index = buffer_index;
+                            projected_buffer_index += cursor_x_to_line_end + CursorXPosition(projected_cursor_index) + 1;
 
-                            SetCursorPosition(cursor_index);
+                            if (projected_buffer_index <= buffer_count) {
+                                cursor_index = projected_cursor_index;
+                                buffer_index = projected_buffer_index;
+                                SetCursorPosition(cursor_index);
+                            }
                         }
                     } break;
                 }
