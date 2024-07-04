@@ -59,6 +59,7 @@ int main() {
     while (c != 'q') {
         c = getch();
         switch (c) {
+#if 0
             case '\r': { // NOTE: Enter key
                 buffer[buffer_index++] = '\n';
                 buffer_count++;
@@ -72,6 +73,7 @@ int main() {
                 // TODO: Looks like theres some funny business going on with the enter key when you press it 
                 // before the end of the line
             } break;
+#endif
             case 8: { // NOTE: Backspace key
                 if (buffer_index > 0) {
                     for (int i = buffer_index - 1; i < buffer_count; i++) {
@@ -159,9 +161,22 @@ int main() {
                         buffer[i] = buffer[i-1];
                     }
                 }
-                row_line_sizes[CursorYPosition(cursor_index)] += 1;
+                if (c == '\r') {
+                    c = '\n';
+                    // TODO: I'm going to need to have a max row count and shift the row sizes in the buffer when new lines are created and deleted I think
+                    int chars_for_new_line = row_line_sizes[CursorYPosition(cursor_index)] - CursorXPosition(cursor_index);
+                    int next_line_start = (CursorYPosition(cursor_index) + 1) * MAX_ROW_SIZE;
+                    if (next_line_start < MAX_BUFFER_SIZE) {
+                        cursor_index = next_line_start;
+                        row_line_sizes[CursorYPosition(cursor_index)] += chars_for_new_line;
+                    } else {
+                        cursor_index = buffer_count;
+                    }
+                } else {
+                    row_line_sizes[CursorYPosition(cursor_index)] += 1;
+                    cursor_index++;
+                }
                 buffer[buffer_index++] = c;
-                cursor_index++;
                 buffer_count++;
                 RefreshScreen(cursor_index);
             } break;
