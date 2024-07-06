@@ -54,7 +54,7 @@ void RefreshScreen(int cursor_index) {
 int main() {
     int cursor_index = 0;
     RefreshScreen(cursor_index);
-    int row_num = 0;
+    int row_count = 0;
     unsigned char c = 0;
     while (c != 'q') {
         c = getch();
@@ -168,7 +168,15 @@ int main() {
                     int next_line_start = (CursorYPosition(cursor_index) + 1) * MAX_ROW_SIZE;
                     if (next_line_start < MAX_BUFFER_SIZE) {
                         cursor_index = next_line_start;
+                        row_count++;
+                        if (CursorYPosition(cursor_index) < row_count) {
+                            for (int i = row_count; i > CursorYPosition(cursor_index); i--) {
+                                row_line_sizes[i] = row_line_sizes[i-1];
+                            }
+                        }
+                        row_line_sizes[CursorYPosition(cursor_index)] = 0;
                         row_line_sizes[CursorYPosition(cursor_index)] += chars_for_new_line;
+                        row_line_sizes[CursorYPosition(cursor_index)-1] -= chars_for_new_line;
                     } else {
                         cursor_index = buffer_count;
                     }
