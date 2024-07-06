@@ -1,10 +1,21 @@
 #include <stdio.h>
 #include <windows.h>
 #include <conio.h>
+#include <stdint.h>
 
 #define MAX_BUFFER_SIZE 1024
 #define MAX_LINES 100
 #define MAX_ROW_SIZE 80
+
+typedef uint8_t u8;
+typedef uint16_t u16;
+typedef uint32_t u32;
+typedef uint64_t u64;
+
+typedef int8_t  s8;
+typedef int16_t s16;
+typedef int32_t s32;
+typedef int64_t s64;
 
 unsigned char buffer[MAX_BUFFER_SIZE];
 int row_line_sizes[MAX_LINES];
@@ -48,6 +59,14 @@ void RefreshScreen(int cursor_index) {
     printf("%s", buffer);
     SetCursorPosition(cursor_index);
 }
+
+struct File_State {
+    int cursor_index;
+    int buffer_index;
+    int buffer_count;
+    int row_line_sizes[MAX_LINES];
+    int row_count;
+};
 
 
 
