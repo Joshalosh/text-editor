@@ -17,10 +17,10 @@ typedef int16_t s16;
 typedef int32_t s32;
 typedef int64_t s64;
 
-unsigned char buffer[MAX_BUFFER_SIZE];
-int row_line_sizes[MAX_LINES];
-int buffer_index = 0;
-int buffer_count = 0;
+u8 buffer[MAX_BUFFER_SIZE];
+s32 row_line_sizes[MAX_LINES];
+s32 buffer_index = 0;
+s32 buffer_count = 0;
 
 void ClearScreen() {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -37,65 +37,50 @@ void ClearScreen() {
     SetConsoleCursorPosition(hConsole, coordScreen);
 }
 
-int CursorXPosition(int cursor_index) {
-    int result = cursor_index % MAX_ROW_SIZE;
+s32 CursorXPosition(s32 cursor_index) {
+    s32 result = cursor_index % MAX_ROW_SIZE;
     return result;
 }
 
-int CursorYPosition(int cursor_index) {
-    int result = cursor_index / MAX_ROW_SIZE;
+s32 CursorYPosition(s32 cursor_index) {
+    s32 result = cursor_index / MAX_ROW_SIZE;
     return result;
 }
-void SetCursorPosition(int cursor_index) {
+void SetCursorPosition(s32 cursor_index) {
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    int x           = CursorXPosition(cursor_index);
-    int y           = CursorYPosition(cursor_index);
+    s32 x           = CursorXPosition(cursor_index);
+    s32 y           = CursorYPosition(cursor_index);
     COORD coord     = {(SHORT)x, (SHORT)y};
     SetConsoleCursorPosition(hConsole, coord);
 }
 
-void RefreshScreen(int cursor_index) {
+void RefreshScreen(s32 cursor_index) {
     ClearScreen();
     printf("%s", buffer);
     SetCursorPosition(cursor_index);
 }
 
 struct File_State {
-    int cursor_index;
-    int buffer_index;
-    int buffer_count;
-    int row_line_sizes[MAX_LINES];
-    int row_count;
+    s32 cursor_index;
+    s32 buffer_index;
+    s32 buffer_count;
+    s32 row_line_sizes[MAX_LINES];
+    s32 row_count;
 };
 
 
 
 int main() {
-    int cursor_index = 0;
+    s32 cursor_index = 0;
     RefreshScreen(cursor_index);
-    int row_count = 0;
-    unsigned char c = 0;
+    s32 row_count = 0;
+    u8 c = 0;
     while (c != 'q') {
         c = getch();
         switch (c) {
-#if 0
-            case '\r': { // NOTE: Enter key
-                buffer[buffer_index++] = '\n';
-                buffer_count++;
-                int next_line_start = (CursorYPosition(cursor_index) + 1) * MAX_ROW_SIZE;
-                if (next_line_start < MAX_BUFFER_SIZE) {
-                    cursor_index = next_line_start;
-                } else {
-                    cursor_index = buffer_count;
-                }
-                RefreshScreen(cursor_index);
-                // TODO: Looks like theres some funny business going on with the enter key when you press it 
-                // before the end of the line
-            } break;
-#endif
             case 8: { // NOTE: Backspace key
                 if (buffer_index > 0) {
-                    for (int i = buffer_index - 1; i < buffer_count; i++) {
+                    for (s32 i = buffer_index - 1; i < buffer_count; i++) {
                         buffer[i] = buffer[i+1];
                     }
 
@@ -108,18 +93,18 @@ int main() {
             } break;
             case 0:
             case 224: {
-                unsigned char arrow = _getch();
+                u8 arrow = _getch();
                 switch (arrow) {
                     case 72: { // NOTE: Up arrow
                         if (CursorYPosition(cursor_index) > 0) {
-                            int old_cursor_x = CursorXPosition(cursor_index);
+                            s32 old_cursor_x = CursorXPosition(cursor_index);
                             if (CursorXPosition(cursor_index) > row_line_sizes[CursorYPosition(cursor_index)-1]) {
                                 cursor_index -= MAX_ROW_SIZE;
                                 cursor_index -= CursorXPosition(cursor_index) - row_line_sizes[CursorYPosition(cursor_index)];
                             } else {
                                 cursor_index -= MAX_ROW_SIZE;
                             }
-                            int new_cursor_x_to_line_end = row_line_sizes[CursorYPosition(cursor_index)] - CursorXPosition(cursor_index);
+                            s32 new_cursor_x_to_line_end = row_line_sizes[CursorYPosition(cursor_index)] - CursorXPosition(cursor_index);
                             buffer_index -= old_cursor_x + new_cursor_x_to_line_end + 1;
                             SetCursorPosition(cursor_index);
                         }
@@ -128,8 +113,8 @@ int main() {
                         if (buffer_index && cursor_index > 0) {
                             buffer_index--;
                             if (CursorXPosition(cursor_index) == 0) {
-                                int previous_line = CursorYPosition(cursor_index) - 1;
-                                int null_space = MAX_ROW_SIZE - row_line_sizes[previous_line];
+                                s32 previous_line = CursorYPosition(cursor_index) - 1;
+                                s32 null_space = MAX_ROW_SIZE - row_line_sizes[previous_line];
                                 cursor_index -= null_space;
                             } else {
                                 cursor_index--;
@@ -140,7 +125,7 @@ int main() {
                     case 77: { // NOTE: Right arrow
                         if (buffer_index < buffer_count) {
                             if (CursorXPosition(cursor_index) == row_line_sizes[CursorYPosition(cursor_index)]) {
-                                int next_line_start = (CursorYPosition(cursor_index) + 1) * MAX_ROW_SIZE;
+                                s32 next_line_start = (CursorYPosition(cursor_index) + 1) * MAX_ROW_SIZE;
                                 if (next_line_start < MAX_BUFFER_SIZE) {
                                     cursor_index = next_line_start;
                                 }
@@ -153,16 +138,16 @@ int main() {
                     } break;
                     case 80: { // NOTE: Down arrow
                         if (buffer_index < buffer_count) {
-                            int cursor_x = CursorXPosition(cursor_index);
-                            int projected_cursor_index = cursor_index;
+                            s32 cursor_x = CursorXPosition(cursor_index);
+                            s32 projected_cursor_index = cursor_index;
                             if (CursorXPosition(cursor_index) > row_line_sizes[CursorYPosition(cursor_index)+1]) {
                                 projected_cursor_index += MAX_ROW_SIZE;
                                 projected_cursor_index -= CursorXPosition(projected_cursor_index) - row_line_sizes[CursorYPosition(projected_cursor_index)];
                             } else {
                                 projected_cursor_index += MAX_ROW_SIZE;
                             }
-                            int cursor_x_to_line_end = row_line_sizes[CursorYPosition(cursor_index)] - cursor_x;
-                            int projected_buffer_index = buffer_index;
+                            s32 cursor_x_to_line_end = row_line_sizes[CursorYPosition(cursor_index)] - cursor_x;
+                            s32 projected_buffer_index = buffer_index;
                             projected_buffer_index += cursor_x_to_line_end + CursorXPosition(projected_cursor_index) + 1;
 
                             if (projected_buffer_index <= buffer_count) {
@@ -176,20 +161,20 @@ int main() {
             } break;
             default: { // NOTE: Other characters
                 if (buffer_index < buffer_count) {
-                    for (int i = buffer_count; i > buffer_index; i--) {
+                    for (s32 i = buffer_count; i > buffer_index; i--) {
                         buffer[i] = buffer[i-1];
                     }
                 }
-                if (c == '\r') {
+                if (c == '\r') { // NOTE: Enter key
                     c = '\n';
                     // TODO: I'm going to need to have a max row count and shift the row sizes in the buffer when new lines are created and deleted I think
-                    int chars_for_new_line = row_line_sizes[CursorYPosition(cursor_index)] - CursorXPosition(cursor_index);
-                    int next_line_start = (CursorYPosition(cursor_index) + 1) * MAX_ROW_SIZE;
+                    s32 chars_for_new_line = row_line_sizes[CursorYPosition(cursor_index)] - CursorXPosition(cursor_index);
+                    s32 next_line_start = (CursorYPosition(cursor_index) + 1) * MAX_ROW_SIZE;
                     if (next_line_start < MAX_BUFFER_SIZE) {
                         cursor_index = next_line_start;
                         row_count++;
                         if (CursorYPosition(cursor_index) < row_count) {
-                            for (int i = row_count; i > CursorYPosition(cursor_index); i--) {
+                            for (s32 i = row_count; i > CursorYPosition(cursor_index); i--) {
                                 row_line_sizes[i] = row_line_sizes[i-1];
                             }
                         }
