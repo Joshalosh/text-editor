@@ -7,6 +7,8 @@
 #define MAX_LINES 100
 #define MAX_ROW_SIZE 80
 
+#define Assert(expression) if(!(expression)) {*(int *)0 = 0;}
+
 typedef uint8_t u8;
 typedef uint16_t u16;
 typedef uint32_t u32;
@@ -60,6 +62,41 @@ void RefreshScreen(s32 cursor_index) {
     SetCursorPosition(cursor_index);
 }
 
+struct Memory_Arena {
+    u8 *start;
+    u8 *current;
+    u8 *end;
+};
+
+static Memory_Arena ArenaInit(size_t size) {
+    Memory_Arena result;
+    result.start   = (u8 *)malloc(size);
+    result.current = result.start;
+    result.end     = result.current + size;
+    return result;
+}
+
+static void *ArenaAlloc(Memory_Arena *arena, size_t size) {
+    void *result = NULL;
+    Assert(arena->current + size <= arena->end);
+    result          = arena->current;
+    arena->current += size;
+    return result;
+}
+
+#define ZeroStruct(instance) ZeroSize(&instance, sizeof(instance))
+static void ZeroSize(void *ptr, size_t size) {
+    u8 *byte = (u8 *)ptr;
+
+    while (size--) {
+        *byte++ = 0;
+    }
+}
+
+static void ArenaFree(Memory_Arena *arena) {
+    free(arena->start);
+}
+
 struct File_State {
     s32 cursor_index;
     s32 buffer_index;
@@ -68,6 +105,14 @@ struct File_State {
     s32 row_count;
 };
 
+static File_State FileStateInit() {
+    File_State result;
+    result.cursor_index = 0;
+    result.buffer_index = 0;
+    result.buffer_count = 0;
+    result.row_count    = 0;
+    return result;
+}
 
 
 int main() {
@@ -178,8 +223,8 @@ int main() {
                                 row_line_sizes[i] = row_line_sizes[i-1];
                             }
                         }
-                        row_line_sizes[CursorYPosition(cursor_index)] = 0;
-                        row_line_sizes[CursorYPosition(cursor_index)] += chars_for_new_line;
+                        row_line_sizes[CursorYPosition(cursor_index)]    = 0;
+                        row_line_sizes[CursorYPosition(cursor_index)]   += chars_for_new_line;
                         row_line_sizes[CursorYPosition(cursor_index)-1] -= chars_for_new_line;
                     } else {
                         cursor_index = buffer_count;
