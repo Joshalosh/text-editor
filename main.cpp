@@ -20,7 +20,7 @@ typedef int32_t s32;
 typedef int64_t s64;
 
 u8 buffer[MAX_BUFFER_SIZE];
-s32 row_line_sizes[MAX_LINES];
+//s32 row_line_sizes[MAX_LINES];
 s32 buffer_index = 0;
 s32 buffer_count = 0;
 
@@ -116,24 +116,27 @@ static File_State FileStateInit() {
 
 
 int main() {
-    s32 cursor_index = 0;
-    RefreshScreen(cursor_index);
-    s32 row_count = 0;
+    Memory_Arena arena = ArenaInit(1024*1024);
+    File_State *file_state = (File_State *)ArenaAlloc(&arena, sizeof(File_State));
+    ZeroStruct(file_state);
+    //s32 cursor_index = 0;
+    RefreshScreen(file_state->cursor_index);
+    //s32 row_count = 0;
     u8 c = 0;
     while (c != 'q') {
         c = getch();
         switch (c) {
             case 8: { // NOTE: Backspace key
-                if (buffer_index > 0) {
-                    for (s32 i = buffer_index - 1; i < buffer_count; i++) {
+                if (file_state->buffer_index > 0) {
+                    for (s32 i = file_state->buffer_index - 1; i < file_state->buffer_count; i++) {
                         buffer[i] = buffer[i+1];
                     }
 
-                    row_line_sizes[CursorYPosition(cursor_index)] -= 1;
-                    buffer_count--;
-                    buffer_index--;
-                    cursor_index--;
-                    RefreshScreen(cursor_index);
+                    file_state->row_line_sizes[CursorYPosition(file_state->cursor_index)] -= 1;
+                    file_state->buffer_count--;
+                    file_state->buffer_index--;
+                    file_state->cursor_index--;
+                    RefreshScreen(file_state->cursor_index);
                 }
             } break;
             case 0:
@@ -141,101 +144,101 @@ int main() {
                 u8 arrow = _getch();
                 switch (arrow) {
                     case 72: { // NOTE: Up arrow
-                        if (CursorYPosition(cursor_index) > 0) {
-                            s32 old_cursor_x = CursorXPosition(cursor_index);
-                            if (CursorXPosition(cursor_index) > row_line_sizes[CursorYPosition(cursor_index)-1]) {
-                                cursor_index -= MAX_ROW_SIZE;
-                                cursor_index -= CursorXPosition(cursor_index) - row_line_sizes[CursorYPosition(cursor_index)];
+                        if (CursorYPosition(file_state->cursor_index) > 0) {
+                            s32 old_cursor_x = CursorXPosition(file_state->cursor_index);
+                            if (CursorXPosition(file_state->cursor_index) > file_state->row_line_sizes[CursorYPosition(file_state->cursor_index)-1]) {
+                                file_state->cursor_index -= MAX_ROW_SIZE;
+                                file_state->cursor_index -= CursorXPosition(file_state->cursor_index) - file_state->row_line_sizes[CursorYPosition(file_state->cursor_index)];
                             } else {
-                                cursor_index -= MAX_ROW_SIZE;
+                                file_state->cursor_index -= MAX_ROW_SIZE;
                             }
-                            s32 new_cursor_x_to_line_end = row_line_sizes[CursorYPosition(cursor_index)] - CursorXPosition(cursor_index);
-                            buffer_index -= old_cursor_x + new_cursor_x_to_line_end + 1;
-                            SetCursorPosition(cursor_index);
+                            s32 new_cursor_x_to_line_end = file_state->row_line_sizes[CursorYPosition(file_state->cursor_index)] - CursorXPosition(file_state->cursor_index);
+                            file_state->buffer_index -= old_cursor_x + new_cursor_x_to_line_end + 1;
+                            SetCursorPosition(file_state->cursor_index);
                         }
                     } break;
                     case 75: { // NOTE: Left arrow
-                        if (buffer_index && cursor_index > 0) {
-                            buffer_index--;
-                            if (CursorXPosition(cursor_index) == 0) {
-                                s32 previous_line = CursorYPosition(cursor_index) - 1;
-                                s32 null_space = MAX_ROW_SIZE - row_line_sizes[previous_line];
-                                cursor_index -= null_space;
+                        if (file_state->buffer_index && file_state->cursor_index > 0) {
+                            file_state->buffer_index--;
+                            if (CursorXPosition(file_state->cursor_index) == 0) {
+                                s32 previous_line = CursorYPosition(file_state->cursor_index) - 1;
+                                s32 null_space = MAX_ROW_SIZE - file_state->row_line_sizes[previous_line];
+                                file_state->cursor_index -= null_space;
                             } else {
-                                cursor_index--;
+                                file_state->cursor_index--;
                             }
-                            SetCursorPosition(cursor_index);
+                            SetCursorPosition(file_state->cursor_index);
                         }
                     } break;
                     case 77: { // NOTE: Right arrow
-                        if (buffer_index < buffer_count) {
-                            if (CursorXPosition(cursor_index) == row_line_sizes[CursorYPosition(cursor_index)]) {
-                                s32 next_line_start = (CursorYPosition(cursor_index) + 1) * MAX_ROW_SIZE;
+                        if (file_state->buffer_index < file_state->buffer_count) {
+                            if (CursorXPosition(file_state->cursor_index) == file_state->row_line_sizes[CursorYPosition(file_state->cursor_index)]) {
+                                s32 next_line_start = (CursorYPosition(file_state->cursor_index) + 1) * MAX_ROW_SIZE;
                                 if (next_line_start < MAX_BUFFER_SIZE) {
-                                    cursor_index = next_line_start;
+                                    file_state->cursor_index = next_line_start;
                                 }
                             } else {
-                                cursor_index++;
+                                file_state->cursor_index++;
                             }
-                            buffer_index++;
-                            SetCursorPosition(cursor_index);
+                            file_state->buffer_index++;
+                            SetCursorPosition(file_state->cursor_index);
                         }
                     } break;
                     case 80: { // NOTE: Down arrow
-                        if (buffer_index < buffer_count) {
-                            s32 cursor_x = CursorXPosition(cursor_index);
-                            s32 projected_cursor_index = cursor_index;
-                            if (CursorXPosition(cursor_index) > row_line_sizes[CursorYPosition(cursor_index)+1]) {
+                        if (file_state->buffer_index < file_state->buffer_count) {
+                            s32 cursor_x = CursorXPosition(file_state->cursor_index);
+                            s32 projected_cursor_index = file_state->cursor_index;
+                            if (CursorXPosition(file_state->cursor_index) > file_state->row_line_sizes[CursorYPosition(file_state->cursor_index)+1]) {
                                 projected_cursor_index += MAX_ROW_SIZE;
-                                projected_cursor_index -= CursorXPosition(projected_cursor_index) - row_line_sizes[CursorYPosition(projected_cursor_index)];
+                                projected_cursor_index -= CursorXPosition(projected_cursor_index) - file_state->row_line_sizes[CursorYPosition(projected_cursor_index)];
                             } else {
                                 projected_cursor_index += MAX_ROW_SIZE;
                             }
-                            s32 cursor_x_to_line_end = row_line_sizes[CursorYPosition(cursor_index)] - cursor_x;
-                            s32 projected_buffer_index = buffer_index;
+                            s32 cursor_x_to_line_end = file_state->row_line_sizes[CursorYPosition(file_state->cursor_index)] - cursor_x;
+                            s32 projected_buffer_index = file_state->buffer_index;
                             projected_buffer_index += cursor_x_to_line_end + CursorXPosition(projected_cursor_index) + 1;
 
-                            if (projected_buffer_index <= buffer_count) {
-                                cursor_index = projected_cursor_index;
-                                buffer_index = projected_buffer_index;
-                                SetCursorPosition(cursor_index);
+                            if (projected_buffer_index <= file_state->buffer_count) {
+                                file_state->cursor_index = projected_cursor_index;
+                                file_state->buffer_index = projected_buffer_index;
+                                SetCursorPosition(file_state->cursor_index);
                             }
                         }
                     } break;
                 }
             } break;
             default: { // NOTE: Other characters
-                if (buffer_index < buffer_count) {
-                    for (s32 i = buffer_count; i > buffer_index; i--) {
+                if (file_state->buffer_index < file_state->buffer_count) {
+                    for (s32 i = file_state->buffer_count; i > file_state->buffer_index; i--) {
                         buffer[i] = buffer[i-1];
                     }
                 }
                 if (c == '\r') { // NOTE: Enter key
                     c = '\n';
                     // TODO: I'm going to need to have a max row count and shift the row sizes in the buffer when new lines are created and deleted I think
-                    s32 chars_for_new_line = row_line_sizes[CursorYPosition(cursor_index)] - CursorXPosition(cursor_index);
-                    s32 next_line_start = (CursorYPosition(cursor_index) + 1) * MAX_ROW_SIZE;
+                    s32 chars_for_new_line = file_state->row_line_sizes[CursorYPosition(file_state->cursor_index)] - CursorXPosition(file_state->cursor_index);
+                    s32 next_line_start = (CursorYPosition(file_state->cursor_index) + 1) * MAX_ROW_SIZE;
                     if (next_line_start < MAX_BUFFER_SIZE) {
-                        cursor_index = next_line_start;
-                        row_count++;
-                        if (CursorYPosition(cursor_index) < row_count) {
-                            for (s32 i = row_count; i > CursorYPosition(cursor_index); i--) {
-                                row_line_sizes[i] = row_line_sizes[i-1];
+                        file_state->cursor_index = next_line_start;
+                        file_state->row_count++;
+                        if (CursorYPosition(file_state->cursor_index) < file_state->row_count) {
+                            for (s32 i = file_state->row_count; i > CursorYPosition(file_state->cursor_index); i--) {
+                                file_state->row_line_sizes[i] = file_state->row_line_sizes[i-1];
                             }
                         }
-                        row_line_sizes[CursorYPosition(cursor_index)]    = 0;
-                        row_line_sizes[CursorYPosition(cursor_index)]   += chars_for_new_line;
-                        row_line_sizes[CursorYPosition(cursor_index)-1] -= chars_for_new_line;
+                        file_state->row_line_sizes[CursorYPosition(file_state->cursor_index)]    = 0;
+                        file_state->row_line_sizes[CursorYPosition(file_state->cursor_index)]   += chars_for_new_line;
+                        file_state->row_line_sizes[CursorYPosition(file_state->cursor_index)-1] -= chars_for_new_line;
                     } else {
-                        cursor_index = buffer_count;
+                        file_state->cursor_index = file_state->buffer_count;
                     }
                 } else {
-                    row_line_sizes[CursorYPosition(cursor_index)] += 1;
-                    cursor_index++;
+                    file_state->row_line_sizes[CursorYPosition(file_state->cursor_index)] += 1;
+                    file_state->cursor_index++;
                 }
-                buffer[buffer_index++] = c;
-                buffer_count++;
-                RefreshScreen(cursor_index);
+                buffer[file_state->buffer_index++] = c;
+                file_state->buffer_count++;
+                RefreshScreen(file_state->cursor_index);
             } break;
         }
     }
