@@ -116,9 +116,10 @@ static File_State FileStateInit() {
 
 
 int main() {
-    Memory_Arena arena = ArenaInit(1024*1024);
+    Memory_Arena arena = ArenaInit(1024ULL*1024);
     File_State *file_state = (File_State *)ArenaAlloc(&arena, sizeof(File_State));
-    ZeroStruct(file_state);
+    //ZeroStruct(file_state);
+    ZeroSize(file_state, sizeof(*file_state));
     //s32 cursor_index = 0;
     RefreshScreen(file_state->cursor_index);
     //s32 row_count = 0;
