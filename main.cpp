@@ -20,7 +20,6 @@ typedef int32_t s32;
 typedef int64_t s64;
 
 u8 buffer[MAX_BUFFER_SIZE];
-//s32 row_line_sizes[MAX_LINES];
 s32 buffer_index = 0;
 s32 buffer_count = 0;
 
@@ -101,8 +100,8 @@ struct File_State {
     s32 cursor_index;
     s32 buffer_index;
     s32 buffer_count;
-    s32 row_line_sizes[MAX_LINES];
     s32 row_count;
+    s32 row_line_sizes[MAX_LINES];
 };
 
 static File_State FileStateInit() {
@@ -118,11 +117,8 @@ static File_State FileStateInit() {
 int main() {
     Memory_Arena arena = ArenaInit(1024ULL*1024);
     File_State *file_state = (File_State *)ArenaAlloc(&arena, sizeof(File_State));
-    //ZeroStruct(file_state);
-    ZeroSize(file_state, sizeof(*file_state));
-    //s32 cursor_index = 0;
+    ZeroStruct(*file_state);
     RefreshScreen(file_state->cursor_index);
-    //s32 row_count = 0;
     u8 c = 0;
     while (c != 'q') {
         c = getch();
