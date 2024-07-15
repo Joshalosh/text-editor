@@ -129,10 +129,25 @@ int main() {
                         buffer[i] = buffer[i+1];
                     }
 
+                    if (CursorXPosition(file_state->cursor_index) == 0) {
+                        s32 previous_row_size = file_state->row_line_sizes[CursorYPosition(file_state->cursor_index)] + 1;
+                        s32 previous_line = CursorYPosition(file_state->cursor_index) - 1;
+                        s32 null_space = MAX_ROW_SIZE - file_state->row_line_sizes[previous_line];
+                        file_state->cursor_index -= null_space;
+                        file_state->row_line_sizes[CursorYPosition(file_state->cursor_index)] += previous_row_size;
+
+                        if (CursorYPosition(file_state->cursor_index) < file_state->row_count) {
+                            for (s32 i = file_state->row_count; i > CursorYPosition(file_state->cursor_index); i--) {
+                                file_state->row_line_sizes[i] = file_state->row_line_sizes[i-1];
+                            }
+                        }
+                    } else {
+                        file_state->cursor_index--;
+                    }
+
                     file_state->row_line_sizes[CursorYPosition(file_state->cursor_index)] -= 1;
                     file_state->buffer_count--;
                     file_state->buffer_index--;
-                    file_state->cursor_index--;
                     RefreshScreen(file_state->cursor_index);
                 }
             } break;
