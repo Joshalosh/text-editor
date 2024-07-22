@@ -137,9 +137,9 @@ int main() {
                         file_state->row_line_sizes[CursorYPosition(file_state->cursor_index)] += previous_row_size;
 
                         if (CursorYPosition(file_state->cursor_index) < file_state->row_count) {
-                            for (s32 i = file_state->row_count; i > CursorYPosition(file_state->cursor_index); i--) {
-                                // TODO: need to debug this
-                                file_state->row_line_sizes[i] = file_state->row_line_sizes[i-1];
+                            file_state->row_count--;
+                            for (s32 i = CursorYPosition(file_state->cursor_index) + 1; i < file_state->row_count; i++) {
+                                file_state->row_line_sizes[i] = file_state->row_line_sizes[i+1];
                             }
                         }
                     } else {
