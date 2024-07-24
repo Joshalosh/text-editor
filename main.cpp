@@ -96,6 +96,11 @@ static void ArenaFree(Memory_Arena *arena) {
     free(arena->start);
 }
 
+struct Visual_Line {
+    s32 start_index;
+    s32 length;
+};
+
 struct File_State {
     s32 cursor_index;
     s32 buffer_index;
