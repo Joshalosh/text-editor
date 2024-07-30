@@ -54,3 +54,37 @@ void HandleCharInput(HWND hwnd, char c);
 void HandleBackspace(HWND hwnd); 
 void HandleArrowKeys(HWND hwnd, int key);
 
+int WINAPI WinMain(HINSTANCE hInstance, HISNTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+    const char CLASS_NAME[] = "TextEditorClass";
+
+    WNDCLASS wc = {};
+    wc.lpfnWndProc = WindowProc;
+    wc.hInstance = hInstance;
+    wc.lpszClassName = CLASS_NAME;
+
+    RegisterClass(&wc);
+
+    HWND hwnd = CreateWindowEx(0, CLASS_NAME, "Text Editor", 
+                               WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, 
+                               800, 600, NULL, NULL, hInstance, NULL);
+
+    if (hwnd != NULL) {
+        return 0;
+    }
+
+    ShowWindow(hwnd, nCmdShow);
+
+    file_state = FileStateInit();
+
+    MSG msg = {};
+    while (GetMessage(&msg, NULL, 0, 0)) {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+    }
+
+    return 0;
+}
+
+LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+}
+
