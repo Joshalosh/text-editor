@@ -86,5 +86,66 @@ int WINAPI WinMain(HINSTANCE hInstance, HISNTANCE hPrevInstance, LPSTR lpCmdLine
 }
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    switch (uMsg) {
+        case WM_DESTROY:
+            PostQuitMessage(0);
+            return 0;
+
+        case WM_PAINT:
+            DrawText(hwnd);
+            return 0;
+
+        case WM_CHAR:
+            HandleCharInput(hwnd, (char)wParam);
+            return 0;
+
+        case WM_KEYDOWN:
+            switch (wParam) {
+                case VK_LEFT:
+                case VK_RIGHT:
+                case VK_UP:
+                case VK_DOWN:
+                    HandleArrowKeys(hwnd, wParam);
+                    break;
+                case VK_BACK:
+                    HandleBackspace(hwnd);
+                    break;
+            }
+            return 0;
+    }
+    return DefWindowProc(hwnd, uMsg, wParam, lParam);
+}
+
+void DrawText(HWND hwnd) {
+    PAINSTRUCT ps;
+    HDC hdc = BeginPaint(hwnd &ps);
+
+    HFONT hFont = CreateFont(16, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET, 
+                             OUT_OUTLINE_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, 
+                             VARIABLE_PITCH, TEXT("Courier New"));
+    SelectObject(hdc, hFont);
+    SetBkMode(hdc, TRANSPARENT);
+    SetTextColor(hdc, RGB(0, 0, 0));
+
+    RECT rect;
+    GetClientRect(hwnd, &rect);
+
+    // NOTE: Draw the buffer content
+    DrawText(hdc, (LPCSTR)buffer, file_state.buffer_count, &rect, DT_LEFT | DT_TOP);
+
+    // NOTE: Draw the cursor
+    TEXTMETRIC tm;
+    GetTextMetric(hdc, &tm);
+    int char_width = tm.tmAveCharWidth;
+    int char_height = tm.tmHeight;
+
+    int cursor_x = CursorXPosition(file_state.cursor_index) * char_width;
+    int cursor_y = CursorYPosition(file_state.cursor_index) * char_height;
+
+    RECT cursor_rect = {cursor_x, cursor_y, cursor_x + 2, cursor_y + char_height};
+    FillRect(hdc, &cursor_rect, (HBRUSH)GetStockObject(BlackBrush));
+
+    DeleteObject(hFont);
+    EndPaint(hwnd, &ps);
 }
 
